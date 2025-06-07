@@ -1,0 +1,74 @@
+﻿@model List<CartItemViewModel>
+
+<h2>Your Cart</h2>
+
+@if (!Model.Any())
+{
+        <p>Your cart is empty!</p>
+}
+else
+{
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                    <tr id="item-@item.Article.Id">
+                        <td>
+                        @{
+                            var imagePath = item.Article.ImagePath ?? "/images/content/default.jpg";
+                        }
+                            <img src="@imagePath" alt="Image" style="width: 50px; height: 50px;" />
+                        </td>
+                        <td>@item.Article.Name</td>
+                        <td>@item.Article.CategoryId</td>
+                        <td>@item.Article.Price.ToString("C")</td>
+                        <td>
+                            <button onclick="updateQuantity(@item.Article.Id, -1)">-</button>
+                            <input type="number" value="@item.Quantity" min="1" id="quantity-@item.Article.Id" disabled />
+                            <button onclick="updateQuantity(@item.Article.Id, 1)">+</button>
+                        </td>
+                        <td>@item.TotalPrice.ToString("C")</td>
+                        <td>
+                            <button onclick="removeFromCart(@item.Article.Id)">Remove</button>
+                        </td>
+                    </tr>
+            }
+            </tbody>
+        </table>
+
+        <h3>Total Price: @Model.Sum(item => item.TotalPrice).ToString("C")</h3>
+
+        <a asp-area="" asp-controller="Cart" asp-action="Checkout"><button class="browse-button">Checkout</button></a>
+}
+
+<script>
+    function updateQuantity(articleId, change) {
+        var quantityField = document.getElementById('quantity-' + articleId);
+        var currentQuantity = parseInt(quantityField.value);
+        var newQuantity = currentQuantity + change;
+
+        // Zapobiegaj ustawieniu ilości ujemnej
+        if (newQuantity < 1) {
+            newQuantity = 1;
+        }
+
+        // Zaktualizuj koszyk i przekieruj
+        window.location.href = '/Cart/UpdateCart?articleId=' + articleId + '&quantity=' + newQuantity;
+    }
+
+    function removeFromCart(articleId) {
+        // Przekierowanie do akcji usunięcia artykułu z koszyka
+        window.location.href = '/Cart/RemoveFromCart?articleId=' + articleId;
+    }
+</script>
